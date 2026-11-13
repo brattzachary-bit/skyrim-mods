@@ -1,0 +1,27 @@
+Seamless Door and Travel Transitions 1.1.2
+
+This is a modified version of LoadingFlow 1.2.0 by RandyLua
+(https://github.com/RandyLuaW/LoadingFlow, https://www.nexusmods.com/skyrimspecialedition/mods/197822).
+
+LoadingFlow is dual licensed; this work uses and is distributed under its GNU General Public License
+version 3.0 option (LICENSE.txt section 9, full text in LICENSE-GPL-3.0.txt). The whole of this work,
+including every modification, is licensed under GPL-3.0. There is no warranty.
+
+Modified by zbratt, November 2026. Summary of changes (marked in the source with the tags shown):
+  [Seamless]  the last frame of the old cell is held and dissolved into the new cell
+  [EaseIn]    the held picture is taken with the HUD hidden and pushes forward very slowly
+  [FGPause]   FidelityFX frame generation is paused while a transition is on screen
+  [TravelFx]  transitions instead of the loading screen for loads that are not doors
+  [Styles]    transition styles (eyes, fade, light, drowsy, ink, soul mist, wipe, dream, dissolve), MCM page, previews
+  [Rules]     transitions chosen per door type, place and situation; user rule files
+  [Safe]      start-up self-check; frames are never withheld unless a working overlay owns the screen;
+              covered loads may take as long as they need
+  [DLSSG]     experimental pause of NVIDIA DLSS frame generation (Streamline)
+  [Compat]    Loading Menu open/close events are announced to other mods although the menu stays closed
+  include/VoidOverlayShader.h is new (shaders compiled at runtime).
+
+Source code: the "Source" file on the mod page where you downloaded this, which is the complete
+corresponding source for this binary.
+
+LoadingFlow copyright (c) 2026 RandyLua. Modifications copyright (c) 2026 zbratt.
+Not affiliated with or endorsed by the author of LoadingFlow.

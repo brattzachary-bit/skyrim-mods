@@ -1,0 +1,68 @@
+THIRD-PARTY NOTICES — LoadingFlow
+
+This project is built against the following third-party components. Their licenses are unaffected
+by this repository's own license (see LICENSE).
+
+1. CommonLibSSE-NG
+   https://github.com/CharmedBaryon/CommonLibSSE-NG
+   MIT License — Copyright (c) 2018 Ryan-rsm-McKenzie and contributors.
+   Statically linked into the shipped DLL. The MIT license permits that; the MIT copyright notice
+   and permission notice are reproduced below.
+
+   Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+   and associated documentation files (the "Software"), to deal in the Software without
+   restriction, including without limitation the rights to use, copy, modify, merge, publish,
+   distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+   Software is furnished to do so, subject to the following conditions:
+   The above copyright notice and this permission notice shall be included in all copies or
+   substantial portions of the Software.
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED.
+
+2. spdlog
+   https://github.com/gabime/spdlog
+   MIT License — Copyright (c) 2016 Gabi Melman.
+   Used through CommonLibSSE-NG for logging. MIT terms as reproduced in section 1 above.
+
+3. SKSE (Skyrim Script Extender) plugin API headers
+   https://skse.silverlock.org/
+   The plugin is built against the SKSE public headers. SKSE itself is not redistributed here and
+   is a prerequisite the user installs separately.
+
+4. Bethesda game headers / Address Library
+   Types and addresses are described by CommonLibSSE-NG. No Bethesda code, assets, or data files
+   are redistributed by this repository.
+
+4. SKSE Menu Framework 3  —  GNU GPL v3.0
+   https://github.com/QTR-Modding/SKSE-Menu-Framework-3
+   The in-game settings menu is an optional build feature (CMake option WITH_MENU). The upstream
+   header is deliberately NOT included in this repository; obtain it from its own project.
+   IMPORTANT: the pre-built plugin distributed through the official channels is built WITH the
+   menu, therefore that binary links GPL-3.0 code and is distributed under the GPL-3.0 option of
+   this project's dual license (see LICENSE). Builds made with -DWITH_MENU=OFF contain no GPL-3.0
+   code.
+
+
+-------------------------------------------------------------------------------
+Added by Seamless Door and Travel Transitions
+
+A. MinHook 1.3.4
+   https://github.com/TsudaKageyu/minhook
+   BSD 2-Clause License - Copyright (C) 2009-2017 Tsuda Kageyu. Statically linked; the licence text is
+   in LICENSE-MinHook.txt.
+
+B. AMD FidelityFX SDK
+   https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK
+   MIT License - Copyright (C) Advanced Micro Devices, Inc. No SDK code is included; a few structure
+   layouts follow its public API headers so that frame generation can be paused.
+
+C. SKSE Menu Framework 3
+   https://github.com/QTR-Modding/SKSE-Menu-Framework-3
+   GPL-3.0. Its public header is compiled in for the optional in-game menu.
+
+D. MCM Helper (Exit-9B) and SkyUI (SkyUI Team)
+   Not included. The config page is data for MCM Helper; both are installed separately by the user.
+
+E. NVIDIA Streamline SDK
+   https://github.com/NVIDIA-RTX/Streamline
+   MIT License - Copyright (c) NVIDIA Corporation. No SDK code is included; a few structure layouts and one
+   function name follow its public headers so that DLSS frame generation can be paused.

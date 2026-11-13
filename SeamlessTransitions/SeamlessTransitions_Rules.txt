@@ -1,0 +1,21 @@
+; Seamless Door and Travel Transitions - your own transition rules
+;
+; One rule per line:   <when> <Plugin>|<FormID> = <style> [up|down]
+;
+;   when    door   a load door of this base type (the DOOR record, not the placed reference)
+;           from   a load that starts in this cell, worldspace or location without a door (teleports, scripted moves)
+;           to     arriving in this cell, worldspace or location: changes how closed eyes open again.
+;                  Only eyes, fade and drowsy can be swapped this way, because they all hold on black.
+;   style   default, eyes, fade, light, drowsy, ink, mist, wipe, dream, dissolve
+;           ("default" switches a built-in rule off for that door or place)
+;   up/down direction of travel for the wipe (up if left out)
+;
+; FormIDs are written without the load-order prefix, as shown in xEdit. Rules for plugins you do not
+; have are skipped. Other mods can ship their own SeamlessTransitions_Rules_<anything>.txt next to this file.
+; These rules are looked at before the built-in ones and are read when the game starts.
+;
+; Examples (remove the leading ; to use):
+;door Skyrim.esm|061517 = wipe up          ; Dwemer lift going up (this one is built in)
+;from Skyrim.esm|0165A6 = drowsy           ; anything that moves you out of the Underforge without a door
+;to   Skyrim.esm|050F1E = drowsy           ; waking up in the Abandoned Shack
+;door MyTeleportMod.esp|000D62 = light     ; a portal door from a mod

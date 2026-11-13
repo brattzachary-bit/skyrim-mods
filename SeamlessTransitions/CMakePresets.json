@@ -1,0 +1,32 @@
+{
+	"version": 6,
+	"configurePresets": [
+		{
+			"name": "linux-clangcl",
+			"displayName": "Linux cross-compile (clang-cl + xwin + vcpkg)",
+			"generator": "Ninja",
+			"binaryDir": "${sourceDir}/build",
+			"toolchainFile": "$penv{HOME}/.local/share/vcpkg/scripts/buildsystems/vcpkg.cmake",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "RelWithDebInfo",
+				"CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+				"USE_VCPKG": "ON",
+				"VCPKG_TARGET_TRIPLET": "x64-windows-clangcl",
+				"VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/extern/CommonLibSSE-NG/examples/linux-cross-compile/custom-triplets",
+				"VCPKG_OVERLAY_PORTS": "${sourceDir}/extern/CommonLibSSE-NG/examples/linux-cross-compile/custom-ports",
+				"VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/extern/CommonLibSSE-NG/cmake/toolchain-linux-clangcl.cmake",
+				"CMAKE_CXX_FLAGS": "-DUNICODE -D_UNICODE /permissive- /EHsc /W4 /bigobj -Wno-overloaded-virtual -Wno-delete-non-abstract-non-virtual-dtor -Wno-inconsistent-missing-override -Wno-reinterpret-base-class -Wno-nonportable-include-path -Wno-deprecated-copy-with-user-provided-copy -Wno-invalid-offsetof -Wno-switch -Wno-unused-command-line-argument -Wno-deprecated-volatile -Wno-unused-private-field"
+			},
+			"environment": {
+				"LLVM_MINGW_BIN": "$penv{HOME}/opt/llvm-mingw/bin",
+				"XWIN_SYSROOT": "$penv{HOME}/xwin-out"
+			}
+		}
+	],
+	"buildPresets": [
+		{
+			"name": "linux-clangcl",
+			"configurePreset": "linux-clangcl"
+		}
+	]
+}

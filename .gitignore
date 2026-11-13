@@ -1,0 +1,7 @@
+build/
+build-*/
+dist/
+*.log
+__pycache__/
+*.pyc
+extern/CommonLibSSE-NG
