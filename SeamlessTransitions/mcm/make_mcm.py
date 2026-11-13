@@ -106,6 +106,7 @@ DEFAULTS = {
     "Travel": {"bEnabled": 1, "iFastTravel": 1, "iCarriage": 2, "iOther": 1, "iBlackBook": 5, "iSoulCairn": 6, "iSleep": 4,
                "iEffectMs": 450, "iFastTravelMs": 1000},
     "Places": {"iLift": 7, "iPortal": 3, "iCaptive": 4, "iBoat": 2, "iDream": 8},
+    "Hotkey": {"iKeyStart": 0, "iKeyEnd": 0, "iKeyEndDelayMs": 0},
     "FrameGeneration": {"bPause": 1, "bPauseDlss": 0, "bHoldPresents": 1},
 }
 
@@ -162,12 +163,20 @@ def config():
         style("iDream:Places", "Dreams and other minds", "Entering and leaving Pelagius's mind, and the Dreamstride in Nightcaller Temple.", NO_CHANGE, NO_CHANGE_SHORT),
         style("iCaptive:Places", "Jail, abduction, blackout", "How your eyes open when you arrive in a jail, wake in the Abandoned Shack or in the Temple of Dibella after a night to remember; and the whole transition when you are moved while asleep or black out in the Underforge.", NO_CHANGE, NO_CHANGE_SHORT),
     ]
+    key_help = "For other mods with a hotkey worth pressing around a load (a rendering or frame generation feature that should be off while the area changes). Pick a key the game does not use. The number is a DirectInput key code, the same numbers SkyUI key bindings use. Examples: F1-F10 = 59-68, F11 = 87, F12 = 88, Insert = 210, Home = 199, End = 207, Page Up = 201, Page Down = 209, numpad 0-9 = 82, 79, 80, 81, 75, 76, 77, 71, 72, 73. 0 = no key."
+    hotkeys = [
+        header("Tap a key around every transition"),
+        slider("iKeyStart:Hotkey", "Key when a transition starts", key_help, 0, 255, 1, "{0}"),
+        slider("iKeyEnd:Hotkey", "Key when a transition ends", key_help + " Use the same key as above for a simple off-and-on toggle.", 0, 255, 1, "{0}"),
+        slider("iKeyEndDelayMs:Hotkey", "Wait before the end key", "Extra time after the transition has cleared before the end key is tapped.", 0, 5000, 100, "{0} ms"),
+    ]
     previews = [header("Preview"), preview("Door dissolve", 0)] + [preview(STYLES[i], i) for i in range(1, 9)]
     return {
         "modName": MOD, "displayName": "Seamless Transitions", "minMcmVersion": 9, "cursorFillMode": "topToBottom",
         "pages": [{"pageDisplayName": "Doors", "cursorFillMode": "topToBottom", "content": doors},
                   {"pageDisplayName": "Travel", "cursorFillMode": "topToBottom", "content": travel},
                   {"pageDisplayName": "Places", "cursorFillMode": "topToBottom", "content": places},
+                  {"pageDisplayName": "Hotkey", "cursorFillMode": "topToBottom", "content": hotkeys},
                   {"pageDisplayName": "Preview", "cursorFillMode": "topToBottom", "content": previews}],
     }
 

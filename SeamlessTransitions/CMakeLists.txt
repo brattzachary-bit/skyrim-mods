@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.25)
 # https://github.com/RandyLuaW/LoadingFlow), distributed under GPL-3.0 (LoadingFlow's alternative licence).
 project(
 	SeamlessTransitions
-	VERSION 1.1.2
+	VERSION 1.2.0
 	LANGUAGES CXX
 )
 

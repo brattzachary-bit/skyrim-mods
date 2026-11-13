@@ -10,6 +10,7 @@
 //   [Safe]      start-up self-check; frames are never withheld without a working overlay
 //   [DLSSG]     experimental pause of DLSS frame generation (Streamline)
 //   [Compat]    Loading Menu open/close events are announced for other mods (DynDOLOD)
+//   [Hotkey]    optional key tap at the start and end of every transition
 // LoadingFlow copyright (c) 2026 RandyLua. Modifications copyright (c) 2026 zbratt. No warranty.
 
 #include <MinHook.h>
@@ -351,6 +352,9 @@ namespace
         // when it comes back.
         bool          pauseFrameGen = true;
         bool          pauseDlssFrameGen = false;   // [DLSSG] experimental
+        std::uint32_t keyAtStart = 0;              // [Hotkey] DirectInput scan code tapped when a transition starts (0 = none)
+        std::uint32_t keyAtEnd = 0;                // [Hotkey] ... and when it ends
+        std::uint32_t keyEndDelayMs = 0;
         bool          announceLoads = true;        // [Compat] tell other mods a load happened although no loading screen opened
         // While the held picture is static (door hold until the dissolve; travel cover from the cell swap until the
         // reveal) no frame is presented at all: the display keeps the last one, and the frame generator never sees the
@@ -595,6 +599,9 @@ namespace
             f << "bPauseFrameGen = " << (g_config.pauseFrameGen ? 1 : 0) << "\r\n";
             f << "bPauseDlssFrameGen = " << (g_config.pauseDlssFrameGen ? 1 : 0) << "\r\n";
             f << "bAnnounceLoads = " << (g_config.announceLoads ? 1 : 0) << "\r\n";
+            f << "iKeyAtTransitionStart = " << g_config.keyAtStart << "\r\n";
+            f << "iKeyAtTransitionEnd = " << g_config.keyAtEnd << "\r\n";
+            f << "uKeyAtTransitionEndDelayMs = " << g_config.keyEndDelayMs << "\r\n";
             f << "bHoldPresents = " << (g_config.holdPresents ? 1 : 0) << "\r\n";
             f << "iStyleFastTravel = " << g_config.styleFastTravel << "\r\n";
             f << "iStyleCarriage = " << g_config.styleCarriage << "\r\n";
@@ -941,6 +948,12 @@ namespace
                         g_config.seamlessDoorDelayFrames = static_cast<std::uint32_t>(std::clamp(std::stoi(val), 2, 30));
                     } else if (key == "bHoldPresents") {
                         g_config.holdPresents = (std::stoi(val) != 0);
+                    } else if (key == "iKeyAtTransitionStart") {
+                        g_config.keyAtStart = static_cast<std::uint32_t>(std::clamp(std::stoi(val), 0, 255));
+                    } else if (key == "iKeyAtTransitionEnd") {
+                        g_config.keyAtEnd = static_cast<std::uint32_t>(std::clamp(std::stoi(val), 0, 255));
+                    } else if (key == "uKeyAtTransitionEndDelayMs") {
+                        g_config.keyEndDelayMs = static_cast<std::uint32_t>(std::clamp(std::stoi(val), 0, 10000));
                     } else if (key == "bAnnounceLoads") {
                         g_config.announceLoads = (std::stoi(val) != 0);
                     } else if (key == "bPauseDlssFrameGen") {
@@ -3687,8 +3700,49 @@ namespace
             }
         }
 
+        // ---- [Hotkey] Tap a key when a transition starts and again when it ends, for other mods that have a hotkey
+        // worth pressing around a load (switching a frame-generation or rendering feature off and on, for instance).
+        // Codes are the usual DirectInput scan codes (the same numbers SkyUI key bindings use); 0 = none.
+        namespace hotkey
+        {
+            std::atomic<bool> g_inTransition{ false };
+
+            void Tap(std::uint32_t a_code, std::uint32_t a_delayMs)
+            {
+                if (a_code == 0 || a_code > 255) {
+                    return;
+                }
+                std::thread([a_code, a_delayMs] {
+                    if (a_delayMs) {
+                        std::this_thread::sleep_for(std::chrono::milliseconds(a_delayMs));
+                    }
+                    INPUT input{};
+                    input.type = INPUT_KEYBOARD;
+                    input.ki.wScan = static_cast<WORD>(a_code & 0x7F);
+                    input.ki.dwFlags = KEYEVENTF_SCANCODE | ((a_code & 0x80) ? KEYEVENTF_EXTENDEDKEY : 0);
+                    ::SendInput(1, &input, sizeof(INPUT));
+                    std::this_thread::sleep_for(std::chrono::milliseconds(60));
+                    input.ki.dwFlags |= KEYEVENTF_KEYUP;
+                    ::SendInput(1, &input, sizeof(INPUT));
+                }).detach();
+            }
+
+            void OnTransition(bool a_starting)
+            {
+                if (g_inTransition.exchange(a_starting) == a_starting) {
+                    return;
+                }
+                const std::uint32_t code = a_starting ? g_config.keyAtStart : g_config.keyAtEnd;
+                if (code != 0) {
+                    logger::info("[Hotkey] tapping key {} at the {} of the transition", code, a_starting ? "start" : "end");
+                    Tap(code, a_starting ? 0 : g_config.keyEndDelayMs);
+                }
+            }
+        }
+
         void SetPaused(bool a_on, const char* a_why)
         {
+            hotkey::OnTransition(a_on);   // [Hotkey] every transition passes through here at its start and its end
             dlssg::SetPaused(a_on);   // [DLSSG] independent of the FidelityFX switch
             if (!g_config.pauseFrameGen) {
                 return;
@@ -5863,6 +5917,9 @@ namespace
                     g_config.travelFxOutMs = std::min<std::uint32_t>(3000, ms * 2);   // ink and mist drain more slowly
                 } else if (id == "bPauseDlss:FrameGeneration") g_config.pauseDlssFrameGen = b();
                 else if (id == "bAnnounceLoads:Doors") g_config.announceLoads = b();
+                else if (id == "iKeyStart:Hotkey") g_config.keyAtStart = static_cast<std::uint32_t>(std::clamp(i(), 0, 255));
+                else if (id == "iKeyEnd:Hotkey") g_config.keyAtEnd = static_cast<std::uint32_t>(std::clamp(i(), 0, 255));
+                else if (id == "iKeyEndDelayMs:Hotkey") g_config.keyEndDelayMs = static_cast<std::uint32_t>(std::clamp(i(), 0, 10000));
                 else if (id == "iFastTravelMs:Travel") g_config.travelFxMagicInMs = static_cast<std::uint32_t>(std::clamp(i(), 200, 4000));
                 else if (id == "bPause:FrameGeneration") g_config.pauseFrameGen = b();
                 else if (id == "bHoldPresents:FrameGeneration") g_config.holdPresents = b();
@@ -7980,7 +8037,7 @@ SKSEPluginLoad(const SKSE::LoadInterface* a_skse)
         papyrus->Register(mcm::RegisterPapyrus);   // [Styles] LoadingFlow_Native.Preview
     }
 
-    logger::info("Seamless Door and Travel Transitions v1.1.2 (based on LoadingFlow 1.2.0) loading... [MODE: real transitions | hooks: door + LoadingMenu{} | "
+    logger::info("Seamless Door and Travel Transitions v1.2.0 (based on LoadingFlow 1.2.0) loading... [MODE: real transitions | hooks: door + LoadingMenu{} | "
                  "suppression {} (re-post after {} ms inside a {} ms window) | GLOBAL suppression {} | prewarm {} | "
                  "no-black {} (manual {}, walk-through {}) | cut mask 0x{:08X}/{} ms | freeze delay {} ms | "
                  "envelope {} ({} ms) | pocket copies {} | void overlay {} ({} motes, {} ms pulse)]",

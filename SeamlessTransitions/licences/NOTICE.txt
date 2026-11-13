@@ -1,4 +1,4 @@
-Seamless Door and Travel Transitions 1.1.2
+Seamless Door and Travel Transitions 1.2.0
 
 This is a modified version of LoadingFlow 1.2.0 by RandyLua
 (https://github.com/RandyLuaW/LoadingFlow, https://www.nexusmods.com/skyrimspecialedition/mods/197822).
@@ -18,6 +18,7 @@ Modified by zbratt, November 2026. Summary of changes (marked in the source with
               covered loads may take as long as they need
   [DLSSG]     experimental pause of NVIDIA DLSS frame generation (Streamline)
   [Compat]    Loading Menu open/close events are announced to other mods although the menu stays closed
+  [Hotkey]    optional key tap at the start and end of every transition, for other mods' hotkeys
   include/VoidOverlayShader.h is new (shaders compiled at runtime).
 
 Source code: the "Source" file on the mod page where you downloaded this, which is the complete
