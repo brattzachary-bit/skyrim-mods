@@ -1,4 +1,4 @@
-Seamless Door and Travel Transitions 1.2.0
+Seamless Door and Travel Transitions 1.2.2
 
 This is a modified version of LoadingFlow 1.2.0 by RandyLua
 (https://github.com/RandyLuaW/LoadingFlow, https://www.nexusmods.com/skyrimspecialedition/mods/197822).

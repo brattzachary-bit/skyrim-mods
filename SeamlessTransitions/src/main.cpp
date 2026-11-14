@@ -7058,6 +7058,31 @@ namespace
         }
     }
 
+    // [SameCell] True when this door only moves the player to another spot in the cell they are already in (mod-added
+    // stairs, portals and the like). There is no load to cover, so nothing of this mod may touch it - in particular
+    // not the short HUD-free delay before the door is used: such doors are often driven by trigger scripts that fire
+    // again while we wait, which showed as the screen flashing over and over.
+    bool TeleportsWithinCell(RE::TESObjectREFR* a_door, RE::PlayerCharacter* a_player)
+    {
+        const auto* xTel = a_door ? a_door->extraList.GetByType<RE::ExtraTeleport>() : nullptr;
+        if (!xTel || !xTel->teleportData || !a_player) {
+            return false;
+        }
+        auto linked = xTel->teleportData->linkedDoor.get();
+        if (!linked) {
+            linked = RE::TESObjectREFR::LookupByHandle(xTel->teleportData->linkedDoor.native_handle());
+        }
+        if (!linked) {
+            return false;
+        }
+        auto* dest = linked->GetParentCell();
+        if (!dest) {
+            dest = linked->GetSaveParentCell();
+        }
+        const auto* here = a_player->GetParentCell();
+        return dest && here && dest == here;
+    }
+
     bool HookedDoorActivate(RE::TESBoundObject* a_this, RE::TESObjectREFR* a_targetRef, RE::TESObjectREFR* a_activatorRef,
         std::uint8_t a_arg3, RE::TESBoundObject* a_object, std::int32_t a_targetCount)
     {
@@ -7071,7 +7096,7 @@ namespace
         // [EaseIn] a load door used by the player: take it over for a few HUD-free frames, then replay it.
         if (g_config.seamless && g_config.seamlessHideHud && !easein::g_replaying && !voidoverlay::Failed()) {
             auto* pc = RE::PlayerCharacter::GetSingleton();
-            if (pc && a_activatorRef == pc && a_targetRef->extraList.HasType<RE::ExtraTeleport>()) {
+            if (pc && a_activatorRef == pc && a_targetRef->extraList.HasType<RE::ExtraTeleport>() && !TeleportsWithinCell(a_targetRef, pc)) {
                 if (easein::g_pending.active) {
                     return true;   // already on the way through this door
                 }
@@ -7927,6 +7952,12 @@ namespace
             CacheForms();
             InstallVtableHooks(g_config.usePocketCopies);
             mcm::Install();   // [Styles]
+            if (g_config.prewarmNearbyDoors && ::GetModuleHandleW(L"DoorPreloader.dll")) {
+                // [Compat] Door Preloader does this job on a background thread; LoadingFlow's own pre-warming works in
+                // slices on the game thread, so running both only costs frames near doors.
+                g_config.prewarmNearbyDoors = false;
+                logger::info("[Compat] Door Preloader is installed: built-in model pre-warming switched off for this session");
+            }
             LogGraphicsEnvironment();
             if (g_config.probeGfx) {
                 ProbeDumpGfxOnce();
@@ -8037,7 +8068,7 @@ SKSEPluginLoad(const SKSE::LoadInterface* a_skse)
         papyrus->Register(mcm::RegisterPapyrus);   // [Styles] LoadingFlow_Native.Preview
     }
 
-    logger::info("Seamless Door and Travel Transitions v1.2.0 (based on LoadingFlow 1.2.0) loading... [MODE: real transitions | hooks: door + LoadingMenu{} | "
+    logger::info("Seamless Door and Travel Transitions v1.2.1 (based on LoadingFlow 1.2.0) loading... [MODE: real transitions | hooks: door + LoadingMenu{} | "
                  "suppression {} (re-post after {} ms inside a {} ms window) | GLOBAL suppression {} | prewarm {} | "
                  "no-black {} (manual {}, walk-through {}) | cut mask 0x{:08X}/{} ms | freeze delay {} ms | "
                  "envelope {} ({} ms) | pocket copies {} | void overlay {} ({} motes, {} ms pulse)]",
